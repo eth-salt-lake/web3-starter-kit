@@ -155,7 +155,7 @@ export const baseThemeOptions: ThemeOptions = {
         button: {
             fontWeight: 600
         },
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+        fontFamily: '"Roboto+Slab:300,400,500&display=swap", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
         body1: {
             fontSize: '1.5rem',
             fontWeight: 400,

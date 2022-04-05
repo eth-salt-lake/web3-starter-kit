@@ -1,21 +1,16 @@
 import { Network } from "@ethersproject/networks";
-import { BaseProvider, Web3Provider } from "@ethersproject/providers";
-import { Box, Container, Divider, Tab, Tabs, Typography } from "@mui/material";
-import { Web3ReactHooks } from "@web3-react/core";
-import { BigNumber, ethers } from "ethers";
+import { BaseProvider } from "@ethersproject/providers";
+import { Box, Container, Divider, Grid, Tab, Tabs, Typography } from "@mui/material";
+import { BigNumber } from "ethers";
 import { formatEther } from "ethers/lib/utils";
 import { NextPage } from "next";
 import Head from "next/head";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { AccountTransactions } from "../components/account/account-transactions";
 import { MainLayout } from "../components/main-layout";
-import { BasicChainInformation, CHAINS, ExtendedChainInformation } from "../components/web3/chains";
 import { NETWORK_COIN_SYMBOL } from "../config";
-import { useSelector } from "../store";
-import { getFirstActiveWallet } from "../store/store-getters";
-import { MyWallet, WalletStore } from "../store/wallet-store";
-import { walletNameToConnector, walletNameToHooks } from "../utility/walletUtils";
+import { Web3Context, Web3ContextValue } from "../contexts/web3modal-context";
 
 const tabs = [
     { label: 'Transactions', value: 'transactions' },
@@ -24,14 +19,12 @@ const tabs = [
 const Account: NextPage = () => {
     const [currentTab, setCurrentTab] = useState<string>('transactions');
 
-    const walletStore: WalletStore = useSelector((state) => state.wallet);
-
-    const [wallet, setWallet] = useState<MyWallet>();
     const [balance, setBalance] = useState<BigNumber>(BigNumber.from(0));
-    const [chain, setChain] = useState<ExtendedChainInformation | BasicChainInformation>();
+    const [network, setNetwork] = useState<Network>();
     const [loadingBalance, setLoadingBalance] = useState<boolean>(false);
     const [loadingNetwork, setLoadingNetwork] = useState<boolean>(false);
 
+    const { wallet, provider } = useContext(Web3Context) as Web3ContextValue;
 
     const getBalance = async (provider: BaseProvider, address: string): Promise<BigNumber> => {
         if (provider && address) {
@@ -48,44 +41,30 @@ const Account: NextPage = () => {
     };
 
     useEffect(() => {
-        const activeWallet = getFirstActiveWallet(walletStore);
-        if (activeWallet) {
-            setWallet(activeWallet);
-        }
-    }, [walletStore]);
+        if (wallet?.address && provider) {
 
-    useEffect(() => {
-
-        if (wallet) {
-            const connector = walletNameToConnector(wallet.walletName);
-            if (connector) {
-                const prov = ethers.getDefaultProvider();
-                if (prov) {
-                    setLoadingBalance(true);
-                    getBalance(prov, wallet.address).then((balance) => {
-                        setBalance(balance);
-                    }).catch((e) => {
-                        console.error(e);
-                        toast.error(e.message);
-                    }).finally(() => {
-                        setLoadingBalance(false);
-                    });
-
-                    setLoadingNetwork(true);
-                    getNetwork(prov).then((network) => {
-                        if (network) {
-                            const chainId = network.chainId;
-                            const chain = CHAINS[chainId];
-                            setChain(chain);
-                        }
-                    }).finally(() => {
-                        setLoadingNetwork(false);
-                    });
+            setLoadingNetwork(true);
+            getNetwork(provider).then((net: Network | null) => {
+                console.log('network', net);
+                if (net !== null) {
+                    setNetwork(net);
                 }
-            }
-        }
+            }).catch((error) => {
+                console.error(error);
+            }).finally(() => {
+                setLoadingNetwork(false);
+            });;
 
-    }, [wallet]);
+            setLoadingBalance(true);
+            getBalance(provider, wallet.address).then((balance) => {
+                setBalance(balance);
+            }).catch((error) => {
+                console.error(error);
+            }).finally(() => {
+                setLoadingBalance(false);
+            });
+        }
+    }, [wallet, provider]);
 
     return (
         <>
@@ -103,35 +82,71 @@ const Account: NextPage = () => {
                 }}
             >
                 <Container maxWidth="md">
-                    <Typography variant="h4">
-                        My Account
-                    </Typography>
-                    <Typography
-                        variant="body1"
-                        color="textSecondary"
+                    <Grid
+                        container
                     >
-                        {wallet?.name}
-                    </Typography>
-                    <Typography
-                        variant="subtitle1"
-                        color="textSecondary"
-                    >
-                        {!loadingNetwork && (`Network: ${chain?.name}`)}
-                        {loadingNetwork && (`Loading network...`)}
-                    </Typography>
-                    <Typography
-                        variant="subtitle1"
-                        color="textSecondary"
-                    >
-                        Address: {wallet?.address}
-                    </Typography>
-                    <Typography
-                        variant="subtitle1"
-                        color="textSecondary"
-                    >
-                        {!loadingBalance && (`Balance: ${formatEther(balance)} ${NETWORK_COIN_SYMBOL}`)}
-                        {loadingBalance && 'Loading balance...'}
-                    </Typography>
+                        <Grid
+                            item
+                            xs={12}
+                            sm={12}
+                            md={6}
+                        >
+                            <Typography variant="h4">
+                                My Account
+                            </Typography>
+                            <Typography
+                                variant="body1"
+                                color="textSecondary"
+                            >
+                                {wallet?.ensName}
+                            </Typography>
+                            <Typography
+                                variant="subtitle1"
+                                color="textSecondary"
+                            >
+                                Address: {wallet?.address}
+                            </Typography>
+                            <Typography
+                                variant="subtitle1"
+                                color="textSecondary"
+                            >
+                                {!loadingBalance && (`Balance: ${formatEther(balance)} ${NETWORK_COIN_SYMBOL}`)}
+                                {loadingBalance && 'Loading balance...'}
+                            </Typography>
+                        </Grid>
+                        <Grid
+                            item
+                            xs={12}
+                            sm={12}
+                            md={6}
+                        >
+                            <Typography
+                                variant="h4"
+                            >
+                                Network
+                            </Typography>
+                            <Typography
+                                variant="body1"
+                                color="textSecondary"
+                            >
+                                {loadingNetwork && 'Loading network...'}
+                                {!loadingNetwork && network?.name}
+                            </Typography>
+                            <Typography
+                                variant="subtitle1"
+                                color="textSecondary"
+                            >
+                                {`Chain Id: ${network?.chainId}`}
+                            </Typography>
+                            <Typography
+                                variant="subtitle1"
+                                color="textSecondary"
+                            >
+                                {`ENS address: ${network?.ensAddress}`}
+                            </Typography>
+                        </Grid>
+                    </Grid>
+
                     <Tabs
                         indicatorColor="primary"
                         onChange={(event: ChangeEvent<{}>, value: string) => setCurrentTab(value)}

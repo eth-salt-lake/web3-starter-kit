@@ -1,15 +1,14 @@
-import { AppBar, Box, Button, Container, IconButton, Toolbar, Link, Avatar, ButtonBase } from '@mui/material';
-import { FC, useEffect, useRef, useState } from 'react';
+import { AppBar, Box, Button, Container, IconButton, Toolbar, Link, Avatar, ButtonBase, FormControlLabel, FormGroup } from '@mui/material';
+import { FC, useContext, useEffect, useRef, useState } from 'react';
 import NextLink from 'next/link';
-import WalletConnectDialog from './dialogs/wallet-connect-dialog';
 import { Menu } from '@mui/icons-material';
 import { AccountPopover } from './account/account-popover';
-import { useSelector } from '../store';
-import { getFirstActiveWallet } from '../store/store-getters';
-import { MyWallet, WalletStore } from '../store/wallet-store';
-import { Web3ReactHooks } from '@web3-react/core';
-import { hooks } from './web3/connectors/metamask';
 import Image from 'next/image';
+import { Web3Context, Web3ContextValue } from '../contexts/web3modal-context';
+import { MyWallet } from '../types/my-wallet';
+import { ThemeUISwitch } from './theme-switch';
+import { SettingsContext, SettingsContextValue } from '../contexts/settings-context';
+
 
 interface MainNavbarProps {
     onOpenSidebar?: () => void;
@@ -17,7 +16,6 @@ interface MainNavbarProps {
 
 interface AccountButtonProps {
     accountData: MyWallet;
-    provider?: ReturnType<Web3ReactHooks['useProvider']>;
 }
 
 const AccountButton: FC<AccountButtonProps> = (props: AccountButtonProps) => {
@@ -26,8 +24,8 @@ const AccountButton: FC<AccountButtonProps> = (props: AccountButtonProps) => {
     const [openPopover, setOpenPopover] = useState<boolean>(false);
 
     const user = {
-        avatar: accountData.avatar ? accountData.avatar : '/images/icn-user.svg',
-        name: (accountData.ensNames && accountData.ensNames?.length > 0) ? accountData.ensNames[0] : accountData.address,
+        avatar: accountData.avatar ? accountData.avatar : '',
+        name: (accountData.ensName && accountData.ensName?.length > 0) ? accountData.ensName : accountData.address,
     };
 
     const handleOpenPopover = (): void => {
@@ -37,6 +35,9 @@ const AccountButton: FC<AccountButtonProps> = (props: AccountButtonProps) => {
     const handleClosePopover = (): void => {
         setOpenPopover(false);
     };
+
+    useEffect(() => {
+    }, [accountData]);
 
     return (
         <>
@@ -54,7 +55,7 @@ const AccountButton: FC<AccountButtonProps> = (props: AccountButtonProps) => {
                     sx={{
                         height: 40,
                         width: 40,
-                        pt: user.avatar === '/images/icn-user.svg' ? 0.5 : 0,
+                        pt: user.avatar === '' ? 0.5 : 0,
                     }}
                     src={user.avatar}
                 />
@@ -70,50 +71,24 @@ const AccountButton: FC<AccountButtonProps> = (props: AccountButtonProps) => {
 
 export const MainNavbar: FC<MainNavbarProps> = (props) => {
     const { onOpenSidebar } = props;
-    const anchorRef = useRef<HTMLButtonElement | null>(null);
 
-    const [walletModalOpen, setWalletModalOpen] = useState<boolean>(false);
-    const [activeWallet, setActiveWallet] = useState<MyWallet>();
+    const [themeSwitch, setThemeSwitch] = useState<boolean>(false);
 
-    const walletStore: WalletStore = useSelector((state) => state.wallet);
+    const { connect, wallet } = useContext(Web3Context) as Web3ContextValue;
+    const { saveSettings, settings } = useContext(SettingsContext) as SettingsContextValue;
 
-    const handleConnectWalletClick = () => {
-        setWalletModalOpen(true);
+    const connectWallet = async () => {
+        try {
+            await connect();
+        } catch (e) {
+            console.warn(e);
+        }
     };
 
-    const { useProvider } = hooks;
-
-    const provider = useProvider();
-
-    useEffect(() => {
-        if (walletStore.wallets.length > 0) {
-            // find active wallet
-            const aw = getFirstActiveWallet(walletStore);
-            if (aw) {
-                setActiveWallet(aw);
-            } else {
-                setActiveWallet(undefined);
-            }
-        } else {
-            setActiveWallet(undefined);
-        }
-    }, [walletStore, walletStore.wallets]);
-
-    useEffect(() => {
-        provider?.addListener('network', (e: Event) => {
-            console.log('network changed: ', e);
-        });
-    }, [provider]);
-
-    useEffect(() => {
-        if (window.ethereum) {
-            window.ethereum.on('accountsChanged', (e: any) => {
-                if (e.length > 0) {
-                    console.log('account changed: ', e);
-                }
-            });
-        }
-    }, []);
+    const handleThemeSwitch = () => {
+        settings.theme === 'light' ? saveSettings({ theme: 'dark' }) : saveSettings({ theme: 'light' });
+        setThemeSwitch(!themeSwitch);
+    };
 
     return (
         <>
@@ -125,11 +100,6 @@ export const MainNavbar: FC<MainNavbarProps> = (props) => {
                 }}
             >
                 <Container maxWidth="lg">
-                    <WalletConnectDialog
-                        open={walletModalOpen}
-                        onClose={() => setWalletModalOpen(false)}
-                        onConnect={() => console.log('connected')}
-                    />
                     <Toolbar
                         disableGutters
                         sx={{ minHeight: 64 }}
@@ -199,27 +169,14 @@ export const MainNavbar: FC<MainNavbarProps> = (props) => {
                                     Example Link 2
                                 </Link>
                             </NextLink>
-                            <NextLink
-                                href="/"
-                                passHref
-                            >
-                                <Link
-                                    color="textSecondary"
-                                    component="a"
-                                    sx={{ ml: 2 }}
-                                    underline="none"
-                                    variant="subtitle2"
-                                >
-                                    Example Link 3
-                                </Link>
-                            </NextLink>
-                            {activeWallet ? (
+                            <ThemeUISwitch sx={{ m: 1 }} checked={themeSwitch} onChange={handleThemeSwitch} name="themeswitch" />
+                            {wallet ? (
                                 <AccountButton
-                                    accountData={activeWallet}
+                                    accountData={wallet}
                                 />
                             ) : (
                                 <Button
-                                    onClick={handleConnectWalletClick}
+                                    onClick={connectWallet}
                                     size="medium"
                                     sx={{ ml: 2 }}
                                     variant="contained"

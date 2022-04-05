@@ -1,14 +1,11 @@
 import { Box, Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TableRow, Link, Tooltip, Chip } from '@mui/material';
-import { FC, useEffect, useState } from 'react';
-import axios from 'axios';
+import { FC, useContext, useEffect, useState } from 'react';
 import { shortenHash } from '../../utility/walletUtils';
 import { ETHERSCAN_URL, NETWORK_COIN_SYMBOL } from '../../config';
 import { formatDistanceToNow } from 'date-fns';
-import { ethers } from 'ethers';
-import toast from 'react-hot-toast';
-import { WalletStore } from '../../store/wallet-store';
-import { useSelector } from '../../store';
-import { getFirstActiveWallet } from '../../store/store-getters';
+import { BigNumber, ethers } from 'ethers';
+import axios from 'axios';
+import { Web3Context, Web3ContextValue } from '../../contexts/web3modal-context';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -35,14 +32,12 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 export const AccountTransactions: FC = () => {
 
     const [transactions, setTransactions] = useState<any[]>([]);
-
-    const walletStore: WalletStore = useSelector((state) => state.wallet);
+    const { wallet } = useContext(Web3Context) as Web3ContextValue;
 
     useEffect(() => {
-        const activeWallet = getFirstActiveWallet(walletStore);
-        if (activeWallet) {
+        if (wallet?.address) {
 
-            axios.get(`/api/transactions/${activeWallet.address}`).then(res => {
+            axios.get(`/api/transactions/${wallet.address}`).then(res => {
                 if (res.data?.result) {
                     if (Array.isArray(res.data.result)) {
                         setTransactions(res.data.result);
@@ -50,10 +45,9 @@ export const AccountTransactions: FC = () => {
                 }
             }).catch(err => {
                 console.error(err);
-                toast.error(err.message);
             });
         }
-    }, [walletStore]);
+    }, [wallet]);
 
     return (
         <Box>
@@ -111,7 +105,7 @@ export const AccountTransactions: FC = () => {
                                         {shortenHash(tx.from, 12)}
                                     </Link>
                                 </StyledTableCell>
-                                <StyledTableCell align={tx.to === '0x1b1dc08159d2ec270ca851d71ea6dfa0c1a3375a' ? 'right' : 'left'}>{tx.to === '0x1b1dc08159d2ec270ca851d71ea6dfa0c1a3375a' ?
+                                <StyledTableCell align={tx.to === wallet?.address?.toLowerCase() ? 'right' : 'left'}>{tx.to === wallet?.address?.toLocaleLowerCase() ?
                                     (<Chip label="in" color="primary" size="small" />) :
                                     (
                                         <Chip label="out" color="secondary" size="small" />
@@ -128,8 +122,8 @@ export const AccountTransactions: FC = () => {
                                         {shortenHash(tx.to, 12)}
                                     </Link>
                                 </StyledTableCell>
-                                <StyledTableCell align='center'>{Math.round(+ethers.utils.formatEther(tx.value) * 1e4) / 1e4}&nbsp;{`${NETWORK_COIN_SYMBOL}`}</StyledTableCell>
-                                <StyledTableCell align='center'>{Math.round(+ethers.utils.formatEther(+tx.gasUsed * +tx.gasPrice) * 1e4) / 1e4}</StyledTableCell>
+                                <StyledTableCell align='center'>{Math.round(+ethers.utils.formatUnits(BigNumber.from(tx.value), 18) * 1e4) / 1e4}&nbsp;{`${NETWORK_COIN_SYMBOL}`}</StyledTableCell>
+                                <StyledTableCell align='center'>{Math.round(+ethers.utils.formatUnits(BigNumber.from(tx.gasUsed).mul(tx.gasPrice)) * 1e4) / 1e4}</StyledTableCell>
                             </StyledTableRow>
                         ))}
                     </TableBody>

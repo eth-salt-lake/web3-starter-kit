@@ -1,13 +1,8 @@
 import { Box, Drawer, Link, styled, Theme, useMediaQuery, Button } from '@mui/material';
 import { useRouter } from 'next/router';
-import { FC, useEffect, useState } from 'react';
+import { FC, useContext, useEffect, useState } from 'react';
 import NextLink from 'next/link';
-import WalletConnectDialog from './dialogs/wallet-connect-dialog';
-import { useDispatch, useSelector } from '../store';
-import { cleanWalletCache, MyWallet, WalletStore } from '../store/wallet-store';
-import { getFirstActiveWallet } from '../store/store-getters';
-import { walletNameToConnector } from '../utility/walletUtils';
-import { disconnectWallet } from './web3/connect';
+import { Web3Context, Web3ContextValue } from '../contexts/web3modal-context';
 
 interface MainSidebarProps {
     onClose: () => void;
@@ -32,15 +27,10 @@ export const MainSidebar: FC<MainSidebarProps> = (props) => {
     const lgUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'));
 
 
-
-    const walletStore: WalletStore = useSelector((state) => state.wallet);
-    const [activeWallet, setActiveWallet] = useState<MyWallet>();
-    const [walletModalOpen, setWalletModalOpen] = useState<boolean>(false);
-
-    const dispatch = useDispatch();
+    const { connect, wallet, disconnect } = useContext(Web3Context) as Web3ContextValue;
 
     const handleConnectWalletClick = () => {
-        setWalletModalOpen(true);
+        connect();
     };
 
     const handlePathChange = () => {
@@ -51,16 +41,7 @@ export const MainSidebar: FC<MainSidebarProps> = (props) => {
 
     const handleDisconnect = (): void => {
         // get active wallet to disconnect from
-        if (activeWallet) {
-            const conn = walletNameToConnector(activeWallet.walletName);
-            if (conn != null) {
-                disconnectWallet(conn);
-            }
-        }
-
-        //@ts-ignore
-        dispatch(cleanWalletCache());
-
+        disconnect();
         onClose?.();
         router.push('/');
     };
@@ -71,27 +52,8 @@ export const MainSidebar: FC<MainSidebarProps> = (props) => {
         [router.asPath]
     );
 
-    useEffect(() => {
-        if (walletStore.wallets.length > 0) {
-            // find active wallet
-            const aw = getFirstActiveWallet(walletStore);
-            if (aw) {
-                setActiveWallet(aw);
-            } else {
-                setActiveWallet(undefined);
-            }
-        } else {
-            setActiveWallet(undefined);
-        }
-    }, [walletStore, walletStore.wallets]);
-
     return (
         <>
-            <WalletConnectDialog
-                open={walletModalOpen}
-                onClose={() => setWalletModalOpen(false)}
-                onConnect={() => console.log('connected')}
-            />
             <Drawer
                 anchor="right"
                 onClose={onClose}
@@ -115,7 +77,7 @@ export const MainSidebar: FC<MainSidebarProps> = (props) => {
                             Home
                         </MainSidebarLink>
                     </NextLink>
-                    {activeWallet ? (
+                    {wallet ? (
                         <>
                             <NextLink
                                 href="/account"
