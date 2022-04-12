@@ -1,6 +1,6 @@
 # Web3 Starter Kit
 
-Web3 Starter Kit is flexible production grade **Web3** boilerplate with [Next.js 12](https://nextjs.org/blog/next-12), [React.js](https://reactjs.org/), [Material-UI](https://mui.com/), [Typescript](https://www.typescriptlang.org/) and [web3-react (beta)](https://github.com/NoahZinsmeister/web3-react). 
+Web3 Starter Kit is flexible production grade **Web3** boilerplate with [Next.js 12](https://nextjs.org/blog/next-12), [React.js](https://reactjs.org/), [Material-UI](https://mui.com/), [Typescript](https://www.typescriptlang.org/) and [web3modal](https://github.com/Web3Modal/web3modal). 
 
 It's a user interface for your decentralized application. 
 
