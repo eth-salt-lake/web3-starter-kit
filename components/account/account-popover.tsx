@@ -1,10 +1,10 @@
 import { Avatar, Box, Divider, Popover, Typography, MenuItem, ListItemIcon, ListItemText } from "@mui/material";
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import NextLink from 'next/link';
 import { AccountCircle, Logout, SupervisedUserCircle } from "@mui/icons-material";
 import { shortenWalletAddress } from "../../utility/walletUtils";
 import { useRouter } from "next/router";
-import { Web3Context, Web3ContextValue } from "../../contexts/web3modal-context";
+import { useWeb3 } from "../../hooks/use-web3";
 
 interface AccountPopoverProps {
     anchorEl: null | Element;
@@ -16,7 +16,7 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
     const { anchorEl, onClose, open, ...other } = props;
     const router = useRouter();
 
-    const { wallet, disconnect } = useContext(Web3Context) as Web3ContextValue;
+    const { wallet, disconnect } = useWeb3();
 
     // handle wallet disconnect
     const handleDisconnect = (): void => {

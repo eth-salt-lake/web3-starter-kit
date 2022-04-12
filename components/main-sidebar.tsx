@@ -1,8 +1,8 @@
 import { Box, Drawer, Link, styled, Theme, useMediaQuery, Button } from '@mui/material';
 import { useRouter } from 'next/router';
-import { FC, useContext, useEffect, useState } from 'react';
+import { FC, useEffect } from 'react';
 import NextLink from 'next/link';
-import { Web3Context, Web3ContextValue } from '../contexts/web3modal-context';
+import { useWeb3 } from '../hooks/use-web3';
 
 interface MainSidebarProps {
     onClose: () => void;
@@ -27,7 +27,7 @@ export const MainSidebar: FC<MainSidebarProps> = (props) => {
     const lgUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'));
 
 
-    const { connect, wallet, disconnect } = useContext(Web3Context) as Web3ContextValue;
+    const { connect, wallet, disconnect } = useWeb3();
 
     const handleConnectWalletClick = () => {
         connect();

@@ -5,12 +5,11 @@ import { BigNumber } from "ethers";
 import { formatEther } from "ethers/lib/utils";
 import { NextPage } from "next";
 import Head from "next/head";
-import { ChangeEvent, useContext, useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { ChangeEvent, useEffect, useState } from "react";
 import { AccountTransactions } from "../components/account/account-transactions";
 import { MainLayout } from "../components/main-layout";
 import { NETWORK_COIN_SYMBOL } from "../config";
-import { Web3Context, Web3ContextValue } from "../contexts/web3modal-context";
+import { useWeb3 } from "../hooks/use-web3";
 
 const tabs = [
     { label: 'Transactions', value: 'transactions' },
@@ -24,7 +23,7 @@ const Account: NextPage = () => {
     const [loadingBalance, setLoadingBalance] = useState<boolean>(false);
     const [loadingNetwork, setLoadingNetwork] = useState<boolean>(false);
 
-    const { wallet, provider } = useContext(Web3Context) as Web3ContextValue;
+    const { wallet, provider } = useWeb3();
 
     const getBalance = async (provider: BaseProvider, address: string): Promise<BigNumber> => {
         if (provider && address) {

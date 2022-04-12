@@ -1,11 +1,11 @@
 import { Box, Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TableRow, Link, Tooltip, Chip } from '@mui/material';
-import { FC, useContext, useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { shortenHash } from '../../utility/walletUtils';
 import { ETHERSCAN_URL, NETWORK_COIN_SYMBOL } from '../../config';
 import { formatDistanceToNow } from 'date-fns';
 import { BigNumber, ethers } from 'ethers';
 import axios from 'axios';
-import { Web3Context, Web3ContextValue } from '../../contexts/web3modal-context';
+import { useWeb3 } from '../../hooks/use-web3';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -32,7 +32,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 export const AccountTransactions: FC = () => {
 
     const [transactions, setTransactions] = useState<any[]>([]);
-    const { wallet } = useContext(Web3Context) as Web3ContextValue;
+    const { wallet } = useWeb3();
 
     useEffect(() => {
         if (wallet?.address) {

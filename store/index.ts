@@ -14,7 +14,7 @@ export type RootState = ReturnType<typeof store.getState>;
 
 export type AppDispatch = typeof store.dispatch;
 
-export type AppThunk = ThunkAction<void, RootState, null, Action<string>>;
+export type AppThunk = ThunkAction<void, RootState, undefined, Action<string>>;
 
 export const useSelector: TypedUseSelectorHook<RootState> = useReduxSelector;
 

@@ -1,13 +1,13 @@
 import { AppBar, Box, Button, Container, IconButton, Toolbar, Link, Avatar, ButtonBase, FormControlLabel, FormGroup } from '@mui/material';
-import { FC, useContext, useEffect, useRef, useState } from 'react';
+import { FC, useRef, useState } from 'react';
 import NextLink from 'next/link';
 import { Menu } from '@mui/icons-material';
 import { AccountPopover } from './account/account-popover';
 import Image from 'next/image';
-import { Web3Context, Web3ContextValue } from '../contexts/web3modal-context';
 import { MyWallet } from '../types/my-wallet';
 import { ThemeUISwitch } from './theme-switch';
-import { SettingsContext, SettingsContextValue } from '../contexts/settings-context';
+import { useWeb3 } from '../hooks/use-web3';
+import { useSettings } from '../hooks/use-settings';
 
 
 interface MainNavbarProps {
@@ -35,9 +35,6 @@ const AccountButton: FC<AccountButtonProps> = (props: AccountButtonProps) => {
     const handleClosePopover = (): void => {
         setOpenPopover(false);
     };
-
-    useEffect(() => {
-    }, [accountData]);
 
     return (
         <>
@@ -74,8 +71,8 @@ export const MainNavbar: FC<MainNavbarProps> = (props) => {
 
     const [themeSwitch, setThemeSwitch] = useState<boolean>(false);
 
-    const { connect, wallet } = useContext(Web3Context) as Web3ContextValue;
-    const { saveSettings, settings } = useContext(SettingsContext) as SettingsContextValue;
+    const { connect, wallet } = useWeb3();
+    const { saveSettings, settings } = useSettings();
 
     const connectWallet = async () => {
         try {

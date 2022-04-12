@@ -1,4 +1,4 @@
-import CoinbaseWalletSDK, { CoinbaseWalletProvider } from '@coinbase/wallet-sdk';
+import CoinbaseWalletSDK from '@coinbase/wallet-sdk';
 import WalletConnectProvider from '@walletconnect/web3-provider';
 
 export const ETHERSCAN_URL = 'https://etherscan.io/';

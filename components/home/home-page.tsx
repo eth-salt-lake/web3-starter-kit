@@ -449,7 +449,6 @@ export const HomePage: FC = (props) => {
                             size="large"
                             variant="contained"
                             onClick={() => {
-                                //@ts-ignore
                                 dispatch(incrementBy(1));
                             }}
                         >
@@ -460,7 +459,6 @@ export const HomePage: FC = (props) => {
                             size="large"
                             variant="contained"
                             onClick={() => {
-                                //@ts-ignore
                                 dispatch(resetCounter());
                             }}
                         >

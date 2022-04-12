@@ -1,6 +1,8 @@
-# dApp Starter Kit
+# Web3 Starter Kit
 
-dApp Starter Kit is flexible production grade **Web3** boilerplate with [Next.js 12](https://nextjs.org/blog/next-12), [React.js](https://reactjs.org/), [Material-UI](https://mui.com/), [Typescript](https://www.typescriptlang.org/) and [web3-react (beta)](https://github.com/NoahZinsmeister/web3-react). 
+Web3 Starter Kit is flexible production grade **Web3** boilerplate with [Next.js 12](https://nextjs.org/blog/next-12), [React.js](https://reactjs.org/), [Material-UI](https://mui.com/), [Typescript](https://www.typescriptlang.org/) and [web3-react (beta)](https://github.com/NoahZinsmeister/web3-react). 
+
+It's a user interface for your decentralized application. 
 
 Includes wallet connection for most popular javascript [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193) providers:
 - [MetaMask](https://metamask.io/)
@@ -8,17 +10,24 @@ Includes wallet connection for most popular javascript [EIP-1193](https://eips.e
 - [Wallet Connect](https://walletconnect.com/)
 - Retrieval of users **latest transactions** from etherscan
 
-dApp Starter Kit is meant:
+Web3 Starter Kit is meant:
 - to be used as **boilerplate** to quickly deploy new project
 - to be used as **educational** resource
 - to be **flexible** accomodating **easy customization**  
 
+# Why
+
+Finding out which web3 libraries work together is still a difficult job. Web3 Started Kit aims to boild down the complexity to simple configuration. 
+
+## Preview
+
+![preview](./docimages/slc_dao_web_starter_kit_screenshot.png)
 
 # Quick start
 
 ## Running locally in development mode
 
-1. `git clone https://github.com/eth-salt-lake/dao-app.git` clones the dApp repository   
+1. `git clone https://github.com/eth-salt-lake/dao-app.git` clones the Web3 Starter Kit repository   
 2. `cd dao-app && git checkout main` checks out the desired branch
 3. `cp env.local.example .env.local` prepares environment variables for development
 4. `npm install` installs dependencies
@@ -38,7 +47,9 @@ That's it. The project should run on your local computer `http://localhost:3000`
 
 # Guides
 
-Simple instructions on how to customize your dApp project. 
+The Web3 app has 2 configurations. 
+1. One for the API, which is used to communicate with etherscan to retrieve users latest transactions. (environment files: `.env.local`, `.env.production`)
+2. One for the Frontend part which is used to configure to which wallets and which blockchains you'd like your users to interact with. (file: `config.ts`)
 
 ## API Configuration
 
@@ -51,10 +62,9 @@ In development create in the root folder file `.env.local`, for production `.env
 
 Contents:
 ```
-APP_NAME=My dApp
+APP_NAME=My Web3 Project Name
 ETHERSCAN_API_KEY=mykey
 ETHERSCAN_API_ENDPOINT=https://api-testnet.polygonscan.com/api
-INFURA_KEY=infura
 ```
 
 `APP_NAME`
@@ -71,11 +81,7 @@ To request information directly from `etherscan` (or etherscan like service) you
 Check the documentation for an endpoint [here](https://docs.etherscan.io/getting-started/endpoint-urls). Or if you'd like to connect to L2 chain like [Polygon](https://polygon.technology/) then check the endpoints [here](https://docs.polygonscan.com/getting-started/endpoint-urls).  
 
 
-`INFURA_KEY`
-
-[Infura](https://infura.io) is a popular gateway to the ethereum (or ethereum like) nodes json-rpc. To get a key you need to create an account, login and create new project for which tyou can generate new keys. This enables your project to send and receive transactions from selected chain. 
-
-## dApp Configuration
+## Frontend Configuration
 
 ```
 root
@@ -87,7 +93,7 @@ Contents:
 export const ETHERSCAN_URL = 'https://etherscan.io/';
 export const NETWORK_COIN_SYMBOL = 'ETH';
 export const DEFAULT_NETWORK_ID = 1; // check folder web/chain.ts for more network IDs
-export const APP_NAME = "dApp Started Kit"
+export const APP_NAME = "Web3 Started Kit"
 export const DEFAULT_APP_THEME = 'light'; // light, dark
  ```
 
@@ -109,7 +115,7 @@ Custom app name.
 
 `DEFAULT_NETWORK_ID`
 
-The selected network dApp will communicate with.
+The selected network Web3 will communicate with.
 
 Helper chain table:
 | Chain ID | Network |
@@ -127,9 +133,48 @@ Helper chain table:
 | 80001    | Polygoin Mumbai |
 
 
-## i18n
+## Usage - Web3 convenience methods
 
-International
+TO access Web3 method use our `web3 hook`: 
+
+```javascript
+const { connect, connectTo, disconnect, wallet } = useWeb3();
+```
+
+### `connect` and `connectTo`
+
+The `connect` and `connectTo` are shortcuts to instantiate [web3modal](https://github.com/Web3Modal/web3modal) connection wizard. Most of the times this will be users first needed step to interact with your dApp.
+
+`connect` allows user to connect to any blockchain. 
+
+`connecTo` will ask user to switch or add the blockchain network you'd like user to connect to. connectTo required 1 parameter which you can find in `blockchains.ts` file. 
+
+For further customization of web3modal please visit [web3modal GitHub](https://github.com/Web3Modal/web3modal#usage). 
+
+### `disconnect`
+
+Disconnects users wallet. 
+
+### `wallet`
+
+wallet holds connected wallets information. The structure is defined in folder `types`: 
+
+```javascript
+export interface MyWallet {
+    address?: string;
+    ensName?: string;
+    avatar?: string;
+}
+```
+
+### `provider`
+
+Web3 Starter Kit is built on top of [ethers.js v5](https://docs.ethers.io/v5/). Ethers.js allows various interactions with Blockchains, such as sending transactions and interacting with your deployed contracts. 
+
+Provider is an instance of `ethers.providers.Web3Provider` with an established connection to desired blockchain (see `Frontend configuration`). 
+
+For full documentation on ethers.js please visit their [documentation page](https://docs.ethers.io/v5/api/). 
+
 
 ## API Endpoints
 
