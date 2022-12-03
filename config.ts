@@ -4,7 +4,7 @@ import WalletConnectProvider from '@walletconnect/web3-provider';
 export const ETHERSCAN_URL = 'https://etherscan.io/';
 export const NETWORK_COIN_SYMBOL = 'ETH';
 export const DEFAULT_CHAIN_ID = 1; // check the docs for more info
-export const APP_NAME = "dApp Started Kit"
+export const APP_NAME = "Liria"
 export const DEFAULT_APP_THEME: 'light' | 'dark' = 'light'; // light, dark
 
 // list of providers for web3 modal

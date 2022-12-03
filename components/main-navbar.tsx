@@ -142,7 +142,7 @@ export const MainNavbar: FC<MainNavbarProps> = (props) => {
                             }}
                         >
                             <NextLink
-                                href="/"
+                                href="/account"
                                 passHref
                             >
                                 <Link
@@ -150,20 +150,7 @@ export const MainNavbar: FC<MainNavbarProps> = (props) => {
                                     underline="none"
                                     variant="subtitle2"
                                 >
-                                    Example Link 1
-                                </Link>
-                            </NextLink>
-                            <NextLink
-                                href="/browse"
-                                passHref
-                            >
-                                <Link
-                                    color="textSecondary"
-                                    sx={{ ml: 2 }}
-                                    underline="none"
-                                    variant="subtitle2"
-                                >
-                                    Example Link 2
+                                    Account
                                 </Link>
                             </NextLink>
                             <ThemeUISwitch sx={{ m: 1 }} checked={themeSwitch} onChange={handleThemeSwitch} name="themeswitch" />
