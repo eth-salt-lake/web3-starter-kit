@@ -13,8 +13,9 @@ import { useWeb3 } from "../hooks/use-web3";
 import MarkdownIt from 'markdown-it';
 import MdEditor from 'react-markdown-editor-lite';
 import 'react-markdown-editor-lite/lib/index.css';
-import { storeArticle, storeNFT } from "../utility/storage";
-
+import { storeNFT } from "../utility/storage";
+import { Post, PostFromChain } from "../types/my-wallet";
+import axios from "axios";
 
 
 const tabs = [
@@ -22,56 +23,51 @@ const tabs = [
 ];
 
 const Account: NextPage = () => {
-    const [currentTab, setCurrentTab] = useState<string>('transactions');
-
-    const [balance, setBalance] = useState<BigNumber>(BigNumber.from(0));
-    const [network, setNetwork] = useState<Network>();
-    const [loadingBalance, setLoadingBalance] = useState<boolean>(false);
-    const [loadingNetwork, setLoadingNetwork] = useState<boolean>(false);
+    const [posts, setPosts] = useState<Array<Post>>([]);
     const [title, setTitle] = useState<string>("");
     const [content, setContent] = useState<any>("");
 
     const { wallet, provider } = useWeb3();
 
-    const getBalance = async (provider: BaseProvider, address: string): Promise<BigNumber> => {
-        if (provider && address) {
-            return provider.getBalance(address);
-        }
-        return BigNumber.from(0);
-    };
-
-    const getNetwork = async (provider: BaseProvider): Promise<Network | null> => {
-        if (provider) {
-            return provider.getNetwork();
-        }
-        return null;
-    };
+    const loadPosts = async () => {
+        const postFromChain: Array<PostFromChain> = [
+            {
+                "cid": "QmV1pDbJfthgx3jPmwHPXY9uT8EA1LB7Mwy71c4dbWJW32",
+                "creator": "0x2e50d66f02AC0d0503812b1f000a616b89A2fd91",
+                "validityScore": 23
+            },
+            {
+                "cid": "QmXB3ZLqxmmoupQxjkkEYqNMbhkdNPRLxzLXHYtqabv6Eb",
+                "creator": "0x2e50d66f02AC0d0503812b1f000a616b89A2fd91",
+                "validityScore": 23
+            },
+        ];
+        const parsedPosts = await Promise.all(
+            postFromChain.map(async (element) => {
+                const response = await axios(`https://gateway.pinata.cloud/ipfs/${p.cid}`);
+                return await response.data;
+            })
+        )
+        setPosts(parsedPosts)
+    }
 
     useEffect(() => {
-        if (wallet?.address && provider) {
-
-            setLoadingNetwork(true);
-            getNetwork(provider).then((net: Network | null) => {
-                console.log('network', net);
-                if (net !== null) {
-                    setNetwork(net);
-                }
-            }).catch((error) => {
-                console.error(error);
-            }).finally(() => {
-                setLoadingNetwork(false);
-            });;
-
-            setLoadingBalance(true);
-            getBalance(provider, wallet.address).then((balance) => {
-                setBalance(balance);
-            }).catch((error) => {
-                console.error(error);
-            }).finally(() => {
-                setLoadingBalance(false);
-            });
-        }
-    }, [wallet, provider]);
+        // const postFromChain: Array<PostFromChain> = [
+        //     {
+        //         "cid": "QmV1pDbJfthgx3jPmwHPXY9uT8EA1LB7Mwy71c4dbWJW32",
+        //         "creator": "0x2e50d66f02AC0d0503812b1f000a616b89A2fd91",
+        //         "validityScore": 23
+        //     },
+        //     {
+        //         "cid": "QmXB3ZLqxmmoupQxjkkEYqNMbhkdNPRLxzLXHYtqabv6Eb",
+        //         "creator": "0x2e50d66f02AC0d0503812b1f000a616b89A2fd91",
+        //         "validityScore": 23
+        //     },
+        // ];
+        
+        
+        // console.log(parsedPosts)
+    }, []);
 
     const mdParser = new MarkdownIt(/* Markdown-it options */);
 
@@ -79,7 +75,7 @@ const Account: NextPage = () => {
         <>
             <Head>
                 <title>
-                    Publish Article
+                    Articles
                 </title>
             </Head>
             <Box
@@ -91,7 +87,7 @@ const Account: NextPage = () => {
                 }}
             >
                 <Container maxWidth="md">
-                    <Typography>Publish Article</Typography>
+                    <Typography>Articles</Typography>
                     <Grid container width="100%" direction="row" alignItems="center">
                         <Grid item xs={1}><Typography variant="subtitle1">Title</Typography></Grid>
                         <Grid item xs>
@@ -99,7 +95,13 @@ const Account: NextPage = () => {
                         </Grid>
                     </Grid>
                     {/* <Divider sx={{ mb: 3 }} /> */}
-                    <MdEditor style={{ height: '500px' }} renderHTML={text => mdParser.render(text)} onChange={(e) => setContent(e)} />
+                    {
+                        posts.map((post) => <Box>
+                            <Typography>{post.cid}</Typography>
+                            <Typography>{post.creator}</Typography>
+                            <Typography>{post.validityScore}</Typography>
+                        </Box>)
+                    }
                     <Divider sx={{ mb: 3 }} />
                     <Button
                             size="large"
@@ -107,7 +109,7 @@ const Account: NextPage = () => {
                             onClick={async () => {
                                 console.log(title, content?.html, wallet?.address)
                                 const walletAddress = wallet?.address ? wallet.address : '';
-                                const res = await storeArticle(title, content?.html, walletAddress)
+                                const res = await storeNFT(title, content?.html, walletAddress)
                                 console.log(res)
                                 // storeNFT(title, content, wallet)
                             }}
