@@ -93,8 +93,8 @@ const Account: NextPage = () => {
                 <Container maxWidth="md">
                     <Typography>Publish Article</Typography>
                     <Grid container width="100%" direction="row" alignItems="center">
-                        <Grid item md={1}><Typography variant="subtitle1">Title</Typography></Grid>
-                        <Grid item md>
+                        <Grid item xs={1}><Typography variant="subtitle1">Title</Typography></Grid>
+                        <Grid item xs>
                             <TextField variant="standard" size="small" fullWidth onChange={(e) => setTitle(e?.target.value)}/>
                         </Grid>
                     </Grid>
@@ -104,10 +104,11 @@ const Account: NextPage = () => {
                     <Button
                             size="large"
                             variant="contained"
-                            onClick={() => {
+                            onClick={async () => {
                                 console.log(title, content?.html, wallet?.address)
                                 const walletAddress = wallet?.address ? wallet.address : '';
-                                storeNFT(title, content?.html, walletAddress)
+                                const res = await storeNFT(title, content?.html, walletAddress)
+                                console.log(res)
                                 // storeNFT(title, content, wallet)
                             }}
                         >
